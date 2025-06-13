@@ -2,167 +2,185 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Calendar, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useTransition } from "react";
+import { signIn } from "next-auth/react";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import PasswordInput from "@/components/passwordInput";
+import { Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
+import AuthLayout from "@/components/AuthLayout";
+
+import { useRouter } from "next/navigation";
+
+import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const navigation = useRouter();
+
+  const [isPending, startTransition] = useTransition();
+  const formSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Login submitted:", formData);
-  };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    startTransition(async () => {
+      try {
+        const res = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          redirect: false,
+        });
+
+        if (res?.error) {
+          toast.success("Issue In Login", {
+            description: res.error,
+            position: "bottom-right",
+            duration: 3000,
+            className: "bg-red-700 text-white border border-red-600",
+            style: {
+              backgroundColor: "#C1292E",
+              color: "white",
+              border: "1px solid #3e5692",
+            },
+          });
+          throw new Error(res.error);
+        }
+        console.log(res);
+
+        if (res?.ok) {
+          toast.success("Login Successfull", {
+            position: "bottom-right",
+            duration: 3000,
+            className: "bg-green-700 text-white border border-green-600",
+            style: {
+              backgroundColor: "#285943",
+              color: "white",
+              border: "1px solid #3e5692",
+            },
+          });
+          navigation.push("/dashboard"); // or your desired redirect path
+        }
+      } catch (error: any) {
+        toast.success("Issue In Login", {
+          description: error.message,
+          position: "bottom-right",
+          duration: 3000,
+          className: "bg-red-700 text-white border border-red-600",
+          style: {
+            backgroundColor: "#C1292E",
+            color: "white",
+            border: "1px solid #3e5692",
+          },
+        });
+      }
+    });
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Doogal-style background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-200/30 to-indigo-300/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-100/40 to-slate-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-bl from-indigo-200/20 to-blue-300/10 rounded-full blur-2xl animate-pulse delay-500"></div>
-      </div>
+    <AuthLayout
+      header="Welcome Back"
+      title="Sign in to your leave management account"
+      navigateTitle="Don't have an account?"
+      navigator="/SignUp"
+      navigateTo="Sign up"
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email Field */}
+          <div className="space-y-2">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-slate-700 font-medium flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-blue-600" />
+                    Email Address
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      {...field}
+                      className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-      {/* Back button */}
-      <div className="absolute top-6 left-6 z-20">
-        <Link href="/">
+          {/* Password Field */}
+          <div className="space-y-2">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-slate-700 font-medium flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-blue-600" />
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <PasswordInput {...field} className="" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Forgot Password */}
+          <div className="text-right">
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              Forgot password?
+            </button>
+          </div>
+
+          {/* Submit Button */}
           <Button
-            variant="ghost"
-            className="text-slate-600 hover:text-slate-800"
+            type="submit"
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl mb-4 shadow-lg">
-              <Calendar className="w-8 h-8 text-white animate-pulse" />
-            </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-slate-600">
-              Sign in to your leave management account
-            </p>
-          </div>
-
-          {/* Form Card */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-slate-700 font-medium flex items-center gap-2"
-                >
-                  <Mail className="w-4 h-4 text-blue-600" />
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
-                  required
-                />
-              </div>
-
-              {/* Password Field */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="password"
-                  className="text-slate-700 font-medium flex items-center gap-2"
-                >
-                  <Lock className="w-4 h-4 text-blue-600" />
-                  Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Enter your password"
-                    className="h-12 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200 pr-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
+            <h2>
+              {isPending ? (
+                <div className="flex items-center">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  Signing In...
                 </div>
-              </div>
-
-              {/* Forgot Password */}
-              <div className="text-right">
-                <button
-                  type="button"
-                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
-              >
-                Sign In
-              </Button>
-            </form>
-
-            {/* Sign up link */}
-            <div className="mt-6 text-center">
-              <p className="text-slate-600">
-                Don't have an account?{" "}
-                <Link
-                  href="/signup"
-                  className="text-blue-600 hover:text-blue-800 font-semibold transition-colors"
-                >
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center mt-8 text-sm text-slate-500">
-            <p>Secure • Reliable • Professional</p>
-          </div>
-        </div>
-      </div>
-    </div>
+              ) : (
+                <div className="flex gap-2 items-center">Sign In</div>
+              )}
+            </h2>
+          </Button>
+        </form>
+      </Form>
+    </AuthLayout>
   );
 }

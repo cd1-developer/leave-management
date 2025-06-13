@@ -40,6 +40,7 @@ export const POST = async (req: NextRequest) => {
         username,
         email,
         password: hashPassword,
+        role: "USER",
       },
     });
     return NextResponse.json({

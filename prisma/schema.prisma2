@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  username   String
+  role       Role       @default(MEMBER)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  createdOrganizations Organization[] @relation("OrganizationCreator")
+  members    OrgMember[]
+  @@map("users")
+}
+
+model Organization {
+  id         String     @id @default(uuid())
+  organizationName       String
+  industryType String
+  organizationDescription String
+  createdAt  DateTime   @default(now()) @map("created_at")
+  userId     String     @map("userId")
+  
+  // Relationships
+  creator    User       @relation("OrganizationCreator", fields: [userId], references: [id])
+  members    OrgMember[]
+  leaveTypes LeaveType[]
+  reportedManagers ReportedManager[]
+  
+  @@map("organizations")
+}
+
+model OrgMember {
+  id             String     @id @default(uuid())
+  userId         String     @map("user_id")
+  organizationId String     @map("organization_id")
+  joinedAt       DateTime   @default(now()) @map("joined_at")
+  isActive       Boolean    @default(true) @map("is_active")
+  
+  // Relationships
+  user          User       @relation(fields: [userId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  reportingTo   ReportedManager[] @relation("MemberReportingTo")
+  teamMembers   ReportedManager[] @relation("MemberTeamMembers")
+  leaveRequests LeaveRequest[]
+  approvals     LeaveApproval[]
+  
+  @@map("org_members")
+  
+  @@unique([userId, organizationId])
+}
+
+model ReportedManager {
+  id              String     @id @default(uuid())
+  organizationId  String     @map("organization_id")
+  memberId        String     @map("member_id")
+  managerId       String     @map("manager_id")
+  assignedAt      DateTime   @default(now()) @map("assigned_at")
+  
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id])
+  member      OrgMember     @relation("MemberTeamMembers", fields: [memberId], references: [id])
+  manager     OrgMember     @relation("MemberReportingTo", fields: [managerId], references: [id])
+  
+  @@map("reported_managers")
+  
+  @@unique([memberId, managerId, organizationId])
+}
+
+model LeaveType {
+  id             String     @id @default(uuid())
+  organizationId String     @map("organization_id")
+  name           String
+  description    String?
+  isActive       Boolean    @default(true) @map("is_active")
+  
+  // Relationships
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  leaveRequests LeaveRequest[]
+  
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id             String     @id @default(uuid())
+  memberId       String     @map("member_id")
+  leaveTypeId    String     @map("leave_type_id")
+  startDate      DateTime   @map("start_date")
+  endDate        DateTime   @map("end_date")
+  reason         String?
+  status         RequestStatus @default(PENDING)
+  requestedAt    DateTime   @default(now()) @map("requested_at")
+  lastUpdated    DateTime   @default(now()) @map("last_updated")
+  
+  // Relationships
+  member      OrgMember    @relation(fields: [memberId], references: [id])
+  leaveType   LeaveType    @relation(fields: [leaveTypeId], references: [id])
+  approvals   LeaveApproval[]
+  
+  @@map("leave_requests")
+}
+
+model LeaveApproval {
+  id              String     @id @default(uuid())
+  leaveRequestId  String     @map("leave_request_id")
+  managerId       String     @map("manager_id")
+  decision        ApprovalDecision
+  decidedAt       DateTime   @default(now()) @map("decided_at")
+  comments        String?
+  
+  // Relationships
+  leaveRequest LeaveRequest @relation(fields: [leaveRequestId], references: [id])
+  manager      OrgMember    @relation(fields: [managerId], references: [id])
+  
+  @@map("leave_approvals")
+}
+
+enum Role {
+  ADMIN
+  REPORTED_MANAGER
+  MEMBER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
