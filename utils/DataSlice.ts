@@ -44,10 +44,20 @@ export interface OrgMemberReportManager {
   orgMember: OrgMember;
   reportManager: ReportManager;
 }
-
+export interface leaveTypes {
+  id: string;
+  type: string;
+  organizationId: string;
+  leaveInYear: number;
+  leaveInMonth?: number;
+  colorCode: string;
+}
 const initialState = {
   userInfo: {} as User,
   organization: {} as Organization,
+  orgMembers: [] as OrgMember[],
+  isFetch: false as boolean,
+  leaveTypes: [] as leaveTypes[],
 };
 
 const dataSlice = createSlice({
@@ -60,7 +70,22 @@ const dataSlice = createSlice({
     setOrganization: (state, action: PayloadAction<Organization>) => {
       state.organization = action.payload;
     },
+    setOrgMembers: (state, action: PayloadAction<OrgMember[]>) => {
+      state.orgMembers = action.payload;
+    },
+    setLeaveTypes: (state, action: PayloadAction<leaveTypes[]>) => {
+      state.leaveTypes = action.payload;
+    },
+    setIsFetch: (state) => {
+      state.isFetch = !state.isFetch;
+    },
   },
 });
-export const { setUserInfo, setOrganization } = dataSlice.actions;
+export const {
+  setUserInfo,
+  setOrganization,
+  setOrgMembers,
+  setIsFetch,
+  setLeaveTypes,
+} = dataSlice.actions;
 export default dataSlice.reducer;

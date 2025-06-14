@@ -9,6 +9,11 @@ import TeamMemberCompo from "./TeamMemberCompo";
 import LeaveTypeCompo from "./leaveTypeCompo";
 import LeaveRequestCompo from "./LeaveRequestCompo";
 import SettingCompo from "./SettingCompo";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/utils/Store";
+import { setOrgMembers } from "@/utils/DataSlice";
+import DashboardLoader from "@/components/DashboardLoader";
 const TABS = [
   { tab: "Team Memebers", element: <TeamMemberCompo /> },
   { tab: "Leave Types", element: <LeaveTypeCompo /> },
@@ -16,9 +21,26 @@ const TABS = [
   { tab: "Settings", element: <SettingCompo /> },
 ];
 function AdminDashboard() {
+  const dispatch = useDispatch();
   const [isPending, startTransition] = useTransition();
+  const organization = useSelector(
+    (state: RootState) => state.dataSlice.userInfo
+  ).organizations[0];
+  const isFetch = useSelector((state: RootState) => state.dataSlice.isFetch);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    startTransition(async () => {
+      const res = await axios.get(
+        `/api/getOrgMembers?organizationId=${organization.id}`
+      );
+      const { orgMemebers } = res.data;
+      dispatch(setOrgMembers(orgMemebers));
+    });
+  }, [isFetch]);
+
+  if (isPending) {
+    return <DashboardLoader />;
+  }
   return (
     <>
       {/* Main Content */}
@@ -95,7 +117,7 @@ function AdminDashboard() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>{" "}
           {TABS.map((tabInfo, index) => (
-            <TabsContent value={tabInfo.tab} className="mt-6 ml-5" key={index}>
+            <TabsContent value={tabInfo.tab} className="mt-6 px-3" key={index}>
               {tabInfo.element}
             </TabsContent>
           ))}

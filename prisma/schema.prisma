@@ -55,6 +55,15 @@ model OrgMemberReportManager {
   @@unique([orgMemberId, reportManagerId]) // Enforce uniqueness without being primary key
 }
 
+model leaveTypes{
+    id              String @id @default(auto()) @map("_id") @db.ObjectId
+    organizationId  String @db.ObjectId
+    type String 
+    leaveInYear Int
+    leaveInMonth Int?
+    colorCode String
+}
+
 enum Role {
   USER
   ADMIN
