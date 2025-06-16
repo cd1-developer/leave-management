@@ -8,15 +8,17 @@ import {
 } from "@/components/ui/dialog";
 interface DialogCompoType {
   isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange?: (isOpen: boolean) => void;
   title: string;
   discription?: string;
+  children?: React.ReactNode;
 }
 function DialogCompo({
   isOpen,
   title,
   onOpenChange,
   discription,
+  children,
 }: DialogCompoType) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -25,6 +27,7 @@ function DialogCompo({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
         </DialogHeader>
+        {children}
       </DialogContent>
     </Dialog>
   );

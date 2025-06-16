@@ -29,7 +29,7 @@ import { leaveTypes, setIsFetch, setLeaveTypes } from "@/utils/DataSlice";
 
 interface LeaveTypeDialog {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: () => void;
   title: string;
   discription: string;
   organizationId: string;
@@ -98,13 +98,31 @@ function LeaveTypeDialog({
         const { success, message, leaveType } = res.data;
 
         if (!success) {
-          toast.error(message);
+          toast.error(message, {
+            position: "bottom-right",
+            duration: 3000,
+            className: "bg-red-700 text-white border border-red-600",
+            style: {
+              backgroundColor: "#C1292E",
+              color: "white",
+              border: "1px solid #3e5692",
+            },
+          });
           return;
         }
-        toast.success(message);
+        toast.success(message, {
+          position: "bottom-right",
+          duration: 3000,
+          className: "bg-green-700 text-white border border-green-600",
+          style: {
+            backgroundColor: "#285943",
+            color: "white",
+            border: "1px solid #3e5692",
+          },
+        });
         dispatch(setLeaveTypes([...organizationLeaveTypes, leaveType]));
         dispatch(setIsFetch());
-        onOpenChange(false);
+        onOpenChange();
       } catch (error: any) {
         console.error("Error adding leave type:", error);
         toast.error("Something went wrong while adding leave type.");
@@ -113,7 +131,7 @@ function LeaveTypeDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen}>
       <DialogContent className="sm:max-w-md max-w-[95vw] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

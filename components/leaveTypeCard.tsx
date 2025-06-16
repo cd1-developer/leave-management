@@ -1,12 +1,15 @@
 import { leaveTypes } from "@/utils/DataSlice";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
+import DialogCompo from "./DialogCompo";
 interface LeaveTypeCardType {
   leaveType: leaveTypes;
   onDelete: (id: string) => void;
+  isPending: boolean;
 }
-function LeaveTypeCard({ leaveType, onDelete }: LeaveTypeCardType) {
+function LeaveTypeCard({ leaveType, onDelete, isPending }: LeaveTypeCardType) {
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
@@ -23,7 +26,7 @@ function LeaveTypeCard({ leaveType, onDelete }: LeaveTypeCardType) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onDelete(leaveType.id)}
+            onClick={() => setIsOpen(true)}
             className="text-red-600 hover:text-red-800 h-8 w-8 p-0 cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -50,6 +53,32 @@ function LeaveTypeCard({ leaveType, onDelete }: LeaveTypeCardType) {
           <p className="text-slate-700">{leaveType.leaveDiscription}</p>
         </div>
       </div>
+
+      <DialogCompo
+        title="Delete"
+        discription="Are you confirm to delete?"
+        isOpen={isOpen}
+        onOpenChange={() => setIsOpen(false)}
+      >
+        <div className="flex justify-end">
+          <Button
+            onClick={() => onDelete(leaveType.id)}
+            disabled={isPending}
+            className="bg-red-500 hover:bg-red-400 w-32 cursor-pointer"
+          >
+            <div>
+              {isPending ? (
+                <div className="flex items-center">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white  rounded-full animate-spin mr-2"></div>
+                  Deleting...
+                </div>
+              ) : (
+                <div>Delete</div>
+              )}
+            </div>
+          </Button>
+        </div>
+      </DialogCompo>
     </div>
   );
 }

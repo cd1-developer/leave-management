@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/utils/Store";
 import axios from "axios";
-import { setLeaveTypes } from "@/utils/DataSlice";
+import { leaveTypes, setLeaveTypes } from "@/utils/DataSlice";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import LeaveTypeDialog from "@/components/LeaveTypeDialog";
 import { Calendar } from "lucide-react";
 
 import LeaveTypeCard from "@/components/leaveTypeCard";
+import { toast } from "sonner";
 function LeaveTypeCompo() {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+
+  const [isPending, startTransition] = useTransition();
 
   const organizationLeaveTypes = useSelector(
     (state: RootState) => state.dataSlice.leaveTypes
@@ -42,7 +45,20 @@ function LeaveTypeCompo() {
     fetchLeaveTypes();
   }, [isFetch]);
 
-  function handleDeleteLeaveType() {}
+  function handleDeleteLeaveType(id: string) {
+    startTransition(async () => {
+      const res = await axios.delete(`/api/deleteLeave?id=${id}`);
+      const { success, message } = res.data;
+      if (!success) {
+        toast.error(message);
+      }
+      const newLeaveTypes = organizationLeaveTypes.filter(
+        (leave: leaveTypes) => leave.id !== id
+      );
+      dispatch(setLeaveTypes(newLeaveTypes));
+      toast.success(message);
+    });
+  }
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 mx-auto">
@@ -84,6 +100,7 @@ function LeaveTypeCompo() {
                   key={leaveType.id}
                   leaveType={leaveType}
                   onDelete={handleDeleteLeaveType}
+                  isPending={isPending}
                 />
               ))}
             </div>
