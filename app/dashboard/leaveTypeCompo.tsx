@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useTransition } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/utils/Store";
@@ -7,6 +7,9 @@ import { setLeaveTypes } from "@/utils/DataSlice";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import LeaveTypeDialog from "@/components/LeaveTypeDialog";
+import { Calendar } from "lucide-react";
+
+import LeaveTypeCard from "@/components/leaveTypeCard";
 function LeaveTypeCompo() {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +24,6 @@ function LeaveTypeCompo() {
 
   const isFetch = useSelector((state: RootState) => state.dataSlice.isFetch);
 
-  const [isPending, startTransition] = useTransition();
   useEffect(() => {
     const fetchLeaveTypes = async () => {
       try {
@@ -39,6 +41,8 @@ function LeaveTypeCompo() {
 
     fetchLeaveTypes();
   }, [isFetch]);
+
+  function handleDeleteLeaveType() {}
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 mx-auto">
@@ -63,12 +67,27 @@ function LeaveTypeCompo() {
       {/* Leave Types List */}
       <div className="space-y-3 sm:space-y-4">
         {organizationLeaveTypes.length === 0 ? (
-          <div className="p-3 text-sm text-center font-semibold text-gray-500 md:text-md">
-            "No leave types have been configured for this organization yet.
-            Please add leave types to manage leave policies effectively."
+          <div className="text-center py-6 sm:py-8">
+            <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-2 sm:mb-3" />
+            <p className="text-slate-600">No leave types configured yet</p>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">
+              Click the "Add Leave Type" button to create your first leave type
+            </p>
           </div>
         ) : (
-          <div></div>
+          <div>
+            {" "}
+            {/* Leave Types List */}
+            <div className="space-y-3 sm:space-y-4">
+              {organizationLeaveTypes.map((leaveType) => (
+                <LeaveTypeCard
+                  key={leaveType.id}
+                  leaveType={leaveType}
+                  onDelete={handleDeleteLeaveType}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
       <LeaveTypeDialog

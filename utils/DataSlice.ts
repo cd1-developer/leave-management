@@ -51,6 +51,7 @@ export interface leaveTypes {
   leaveInYear: number;
   leaveInMonth?: number;
   colorCode: string;
+  leaveDiscription: string;
 }
 const initialState = {
   userInfo: {} as User,

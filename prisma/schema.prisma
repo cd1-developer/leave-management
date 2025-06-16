@@ -62,6 +62,7 @@ model leaveTypes{
     leaveInYear Int
     leaveInMonth Int?
     colorCode String
+    leaveDiscription String
 }
 
 enum Role {

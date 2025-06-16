@@ -5,11 +5,23 @@ import { prisma } from "@/utils/prisma";
 export const POST = async (req: NextRequest) => {
   try {
     // Parse the incoming request body
-    const { organizationId, type, leaveInYear, leaveInMonth, colorCode } =
-      await req.json();
+    const {
+      organizationId,
+      type,
+      leaveInYear,
+      leaveInMonth,
+      colorCode,
+      leaveDiscription,
+    } = await req.json();
 
     // Basic validation for required fields
-    if (!organizationId || !type || !leaveInYear || !colorCode) {
+    if (
+      !organizationId ||
+      !type ||
+      !leaveInYear ||
+      !colorCode ||
+      !leaveDiscription
+    ) {
       return NextResponse.json(
         { success: false, message: "Invalid inputs" },
         { status: 400 }
@@ -24,6 +36,7 @@ export const POST = async (req: NextRequest) => {
         leaveInYear,
         leaveInMonth: leaveInMonth ? leaveInMonth : 0,
         colorCode,
+        leaveDiscription,
       },
     });
 

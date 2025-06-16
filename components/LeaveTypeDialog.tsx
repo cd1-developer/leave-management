@@ -1,22 +1,11 @@
 import React, { useTransition } from "react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import {
   Form,
@@ -35,7 +24,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import axios from "axios";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { leaveTypes, setIsFetch, setLeaveTypes } from "@/utils/DataSlice";
 
 interface LeaveTypeDialog {
@@ -77,6 +66,7 @@ function LeaveTypeDialog({
         required_error: "Color code is required",
       })
       .min(1, "Color code cannot be empty"),
+    leaveDiscription: z.string().min(5, "Leave Discription is required"),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -86,20 +76,23 @@ function LeaveTypeDialog({
       leaveInYear: "",
       leaveInMonth: "",
       colorCode: "#ff5733",
+      leaveDiscription: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const { type, leaveInYear, leaveInMonth, colorCode } = values;
+    const { type, leaveInYear, leaveInMonth, colorCode, leaveDiscription } =
+      values;
 
     startTransition(async () => {
       try {
         const res = await axios.post("/api/addLeaveType", {
           organizationId,
           type,
-          leaveInYear,
-          leaveInMonth,
+          leaveInYear: Number(leaveInYear),
+          leaveInMonth: Number(leaveInMonth),
           colorCode,
+          leaveDiscription,
         });
 
         const { success, message, leaveType } = res.data;
@@ -208,6 +201,29 @@ function LeaveTypeDialog({
                           id="leaveColor"
                           type="color"
                           className="w-16 h-8 p-0"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="leaveDiscription"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-slate-700 font-medium flex items-center gap-2">
+                      Description
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          type="text"
+                          placeholder="Brief description of this leave type"
                           {...field}
                         />
                       </div>

@@ -19,7 +19,6 @@ function Dashboard() {
   const organizations = useSelector(
     (state: RootState) => state.dataSlice.userInfo
   ).organizations;
-  console.log(organizations);
 
   const dispatch = useDispatch();
 
