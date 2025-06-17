@@ -20,6 +20,7 @@ export interface Organization {
   industryType: string;
   organizationDiscription: string;
   orgMembers: OrgMember[]; // One-to-many
+  createdAt: Date;
 }
 
 export interface OrgMember {
@@ -29,6 +30,7 @@ export interface OrgMember {
   organization: Organization;
   user: User;
   managedBy: OrgMemberReportManager[]; // Join table references
+  createdAt: Date;
 }
 
 export interface ReportManager {

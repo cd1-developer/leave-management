@@ -16,6 +16,7 @@ model User{
   createdAt  DateTime   @default(now()) 
   organizations Organization[] @relation("User")
   orgMember      OrgMember?     @relation("OrgMember") 
+  
 }
 
 model Organization {
@@ -26,6 +27,7 @@ model Organization {
   industryType String
   organizationDiscription String
   orgMembers OrgMember[] @relation("OrganizationMembers")
+  createdAt  DateTime   @default(now()) 
 }
 
 model OrgMember {
@@ -35,6 +37,7 @@ model OrgMember {
   organization   Organization               @relation("OrganizationMembers", fields: [organizationId], references: [id])
   user           User         @relation("OrgMember", fields: [userId], references: [id])
   managedBy      OrgMemberReportManager[]   // Reference to join table
+  createdAt  DateTime   @default(now()) 
 }
 
 model ReportManager {

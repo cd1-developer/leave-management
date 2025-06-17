@@ -24,14 +24,15 @@ function AdminDashboard() {
   const dispatch = useDispatch();
   const [isPending, startTransition] = useTransition();
   const organization = useSelector(
-    (state: RootState) => state.dataSlice.userInfo
-  ).organizations[0];
+    (state: RootState) => state.dataSlice.organization
+  );
+
   const isFetch = useSelector((state: RootState) => state.dataSlice.isFetch);
 
   useEffect(() => {
     startTransition(async () => {
       const res = await axios.get(
-        `/api/getOrgMembers?organizationId=${organization.id}`
+        `/api/getOrgMembers?organizationId=${organization?.id}`
       );
       const { orgMemebers } = res.data;
       dispatch(setOrgMembers(orgMemebers));
@@ -41,6 +42,7 @@ function AdminDashboard() {
   if (isPending) {
     return <DashboardLoader />;
   }
+
   return (
     <>
       {/* Main Content */}

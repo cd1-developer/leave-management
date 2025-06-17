@@ -17,8 +17,8 @@ function Dashboard() {
   const userInfo = useSelector((state: RootState) => state.dataSlice.userInfo);
   const [isPending, startTransition] = useTransition();
   const organizations = useSelector(
-    (state: RootState) => state.dataSlice.userInfo
-  ).organizations;
+    (state: RootState) => state.dataSlice.organization
+  );
 
   const dispatch = useDispatch();
 
@@ -69,7 +69,8 @@ function Dashboard() {
     >
       {" "}
       {/* Main Content */}
-      {organizations.length === 0 ? (
+      {/* // checking Organization.length === 0 or not */}
+      {Object.keys(organizations).length === 0 ? (
         <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
           <div className="w-full max-w-2xl">
             <div className="text-center">
