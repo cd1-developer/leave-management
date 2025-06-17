@@ -18,8 +18,8 @@ export const POST = async (req: NextRequest) => {
         { status: 400 }
       );
     }
-
-    const user = await prisma.user.findUnique({
+    // Finding user
+    let user = await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -27,7 +27,7 @@ export const POST = async (req: NextRequest) => {
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" });
     }
-
+    // Adding User in Organization
     const newMember = await prisma.orgMember.create({
       data: {
         userId,
@@ -44,6 +44,17 @@ export const POST = async (req: NextRequest) => {
             organizations: true,
           },
         },
+      },
+    });
+
+    // After adding memeber in Organization mark the role of User to be MEMBER
+
+    user = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: "MEMBER",
       },
     });
 

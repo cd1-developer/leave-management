@@ -5,9 +5,9 @@ import { Next_Auth } from "@/utils/Next_Auth";
 
 export const GET = async (req: NextRequest) => {
   const session = await getServerSession(Next_Auth);
-  // if (!session) {
-  //   return NextResponse.redirect(new URL("/Login", req.url));
-  // }
+  if (!session) {
+    return NextResponse.redirect(new URL("/Login", req.url));
+  }
   const allUsers = await prisma.user.findMany({
     where: { role: "USER" },
     select: {
