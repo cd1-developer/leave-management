@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
         where: {
           organizationId,
         },
+
         include: {
           user: {
             select: {

@@ -60,7 +60,14 @@ function LeaveTypeCard({ leaveType, onDelete, isPending }: LeaveTypeCardType) {
         isOpen={isOpen}
         onOpenChange={() => setIsOpen(false)}
       >
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            className=" w-26  bg-gray-500 text-white  hover:bg-gray-400 hover:text-white cursor-pointer"
+            onClick={() => setIsOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={() => onDelete(leaveType.id)}
             disabled={isPending}
