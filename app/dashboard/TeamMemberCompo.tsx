@@ -96,18 +96,18 @@ Place all this inside `/app/dashboard/TeamMemberCompo.tsx`
 🧠 Summary:
 - Use Redux `orgMembers` to list current members.
 - Fetch non-org users via `/api/getUsers`.
-- Add user by dispatching dummy to Redux and POSTing to `/api/addOrgMember`.
+- Add user by dispatching dummy to Redux and POST to `/api/addOrgMember`.
 - Call `dispatch(setIsFetch())` to refresh member list.
 
 */
 
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { RootState } from "@/utils/Store";
 import React from "react";
-import { useSelector } from "react-redux";
-import { Mail, Plus, Search } from "lucide-react";
-import { OrgMember, User } from "@/utils/DataSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { Check, Cross, Flag, Mail, Plus, Search, X } from "lucide-react";
+import { OrgMember, setIsFetch, setOrgMembers, User } from "@/utils/DataSlice";
 import DialogCompo from "@/components/DialogCompo";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -122,30 +122,39 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { Label } from "@/components/ui/label";
+
+import { toast } from "sonner";
 
 function TeamMemberCompo() {
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState<string>("");
   const [allUsers, setAllUsers] = useState([]);
-
-  const organizationId = useSelector(
-    (state: RootState) => state.dataSlice.userInfo
-  ).organizations[0].id;
+  const [selectedUser, setSelectedUser] = useState<User[] | []>([]);
+  const [isPending, startTransition] = useTransition();
+  // const [checkedUser, setCheckedUser] = useState([]);
+  const organization = useSelector(
+    (state: RootState) => state.dataSlice.organization
+  );
 
   const organizationMembers = useSelector(
     (state: RootState) => state.dataSlice.orgMembers
   );
 
+  const organizationId = organization.id;
+
   const searchUser = useMemo(() => {
-    const user = allUsers.filter(
-      (u: User) =>
-        u.username.toLowerCase().includes(input.trim().toLowerCase()) ||
-        u.email.toLowerCase().includes(input.trim().toLowerCase())
-    );
+    const user =
+      input === ""
+        ? []
+        : allUsers.filter(
+            (u: User) =>
+              u.username.toLowerCase().includes(input.trim().toLowerCase()) ||
+              u.email.toLowerCase().includes(input.trim().toLowerCase())
+          );
+
     return user;
   }, [input]);
-  console.log(searchUser);
 
   async function fetchAllUsers() {
     const res = await axios.get("/api/getUsers");
@@ -155,6 +164,70 @@ function TeamMemberCompo() {
   useEffect(() => {
     fetchAllUsers();
   }, []);
+
+  function addMember() {
+    startTransition(() => {
+      selectedUser.map(async (user: User) => {
+        // Adding member data in redux store and then send it to the database for fast response
+        let newMember = {
+          id: new Date().toLocaleString(),
+          organizationId,
+          userId: user.id,
+          user: { ...user, role: "MEMBER" },
+          organization,
+          managedBy: [],
+          createdAt: new Date(),
+        } as OrgMember;
+        dispatch(setOrgMembers([...organizationMembers, newMember]));
+        dispatch(setIsFetch());
+        try {
+          let response = await axios.post("/api/addOrgMember", {
+            userId: user.id,
+            organizationId,
+          });
+          const { success, message, newMember } = response.data;
+          if (success === false) {
+            toast.error(message, {
+              position: "bottom-right",
+              duration: 3000,
+              className: "bg-red-700 text-white border border-red-600",
+              style: {
+                backgroundColor: "#C1292E",
+                color: "white",
+                border: "1px solid #3e5692",
+              },
+            });
+          }
+          setIsOpen(false);
+          setInput("");
+          toast.success(message, {
+            position: "bottom-right",
+            duration: 3000,
+            className: "bg-green-700 text-white border border-green-600",
+            style: {
+              backgroundColor: "#285943",
+              color: "white",
+              border: "1px solid #3e5692",
+            },
+          });
+        } catch (error: any) {
+          console.log(
+            "Error in adding member in Organization, " + error.message
+          );
+          toast.error("Error in adding member in Organization", {
+            position: "bottom-right",
+            duration: 3000,
+            className: "bg-red-700 text-white border border-red-600",
+            style: {
+              backgroundColor: "#C1292E",
+              color: "white",
+              border: "1px solid #3e5692",
+            },
+          });
+        }
+      });
+    });
+  }
 
   // Converting the username's first letter into uppercase;
 
@@ -186,7 +259,22 @@ function TeamMemberCompo() {
 
     return userName;
   }
-  console.log(searchUser);
+
+  function selectUserHandler(user: User) {
+    setSelectedUser((prev) => {
+      const exists = prev.some((u) => u.id === user.id);
+      if (exists) {
+        return prev.filter((u) => u.id !== user.id);
+      }
+      return [...prev, user];
+    });
+  }
+
+  function handleRemoveUser(user: User) {
+    setSelectedUser((prev) => {
+      return prev.filter((u) => u.id !== user.id);
+    });
+  }
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 mx-auto main">
@@ -255,6 +343,28 @@ function TeamMemberCompo() {
           </Button>
         </div>
 
+        {selectedUser.length > 0 && (
+          <div className="mb-3 selected-user">
+            <p className="text-gray-500 font-medium my-2">Selected Users</p>
+            <ul className="flex items-center flex-wrap gap-2">
+              {selectedUser.map((user: User) => (
+                <li
+                  key={user.id}
+                  className="text-[0.8rem] flex items-center justify-center font-medium bg-blue-100 transition duration-200 hover:bg-transparent px-3 pt-1 gap-2 rounded-4xl"
+                >
+                  <span className="mb-1">{user.username}</span>
+                  <span
+                    onClick={() => handleRemoveUser(user)}
+                    className="cursor-pointer rounded-[50%] p-1 hover:bg-blue-100"
+                  >
+                    <X size={12} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div>
           {input !== "" && searchUser.length === 0 ? (
             <div className="flex flex-col gap-2 justify-center items-center text-gray-400 font-semibold text-lg">
@@ -264,8 +374,15 @@ function TeamMemberCompo() {
           ) : (
             searchUser.map((user: User) => (
               <div
-                className="flex items-center gap-2 mb-3 rounded-sm p-2 border-1 border-[rgba(0,0,0,0.5)] cursor-pointer"
+                className={`relative flex items-center gap-2 mb-3 rounded-sm p-2 border-1 border-gray-300 cursor-pointer
+                  ${
+                    selectedUser.some((u: User) => u.id === user.id)
+                      ? "bg-blue-100"
+                      : "bg-white"
+                  }
+                  `}
                 key={user.id}
+                onClick={() => selectUserHandler(user)}
               >
                 <div className="bg-blue-200 text-blue-900 text-[1rem] p-2 rounded-[50%] pfp">
                   <span>{firstLetter(user.username)}</span>
@@ -274,21 +391,43 @@ function TeamMemberCompo() {
                   <h2 className="text-sm font-medium">{user.username}</h2>
                   <h2 className="text-[0.7rem] text-gray-500">{user.email}</h2>
                 </div>
-                <div className="select"></div>
+                <div
+                  className={`w-[1.2rem] h-[1.2rem] absolute right-4 flex items-center justify-center outline-[1px] rounded-[50%] outline-[rgba(0,0,0,0.4)] text-white ${
+                    selectedUser.some((u: User) => u.id === user.id)
+                      ? "bg-blue-500"
+                      : "bg-white"
+                  }`}
+                >
+                  <Check size={32} />
+                </div>
               </div>
             ))
           )}
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <button className="px-4 py-2 cursor-pointer border-1 border-[rgba(0,0,0,0.1)] rounded-sm hover:bg-gray-100">
+          <button
+            className="px-4 py-2 cursor-pointer border-1 border-[rgba(0,0,0,0.1)] rounded-sm hover:bg-gray-100"
+            onClick={() => {
+              setInput("");
+              setIsOpen(false);
+            }}
+          >
             Cancel
           </button>
           <Button
-            disabled={input === ""}
+            disabled={selectedUser.length === 0 || isPending === true}
             className="p-3 py-2 cursor-pointer rounded-sm text-white bg-blue-600"
+            onClick={addMember}
           >
-            Add Members
+            {isPending ? (
+              <div className="flex items-center">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                Adding member...
+              </div>
+            ) : (
+              <div className="flex gap-2 items-center">Add Member</div>
+            )}
           </Button>
         </div>
       </DialogCompo>

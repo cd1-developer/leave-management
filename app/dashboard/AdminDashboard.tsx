@@ -103,7 +103,7 @@ function AdminDashboard() {
         </div>
 
         {/* Tabs for Dashboard Sections */}
-        <Tabs defaultValue="overview" className="mb-6 sm:mb-8">
+        <Tabs defaultValue="Team Memebers" className="mb-6 sm:mb-8">
           <ScrollArea className=" rounded-md  p-4  w-98 md:w-full">
             <TabsList className=" backdrop-blur-sm border border-white/20 w-auto inline-flex gap-2">
               {TABS.map((tabInfo, index) => (
