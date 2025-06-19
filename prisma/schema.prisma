@@ -34,6 +34,8 @@ model OrgMember {
    id  String @id @default(auto()) @map("_id") @db.ObjectId
   organizationId String @db.ObjectId
   userId         String @db.ObjectId @unique
+  designation String? @default("")
+  
   organization   Organization               @relation("OrganizationMembers", fields: [organizationId], references: [id])
   user           User         @relation("OrgMember", fields: [userId], references: [id])
   managedBy      OrgMemberReportManager[]   // Reference to join table

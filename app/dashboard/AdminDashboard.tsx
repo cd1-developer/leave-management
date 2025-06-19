@@ -46,7 +46,7 @@ function AdminDashboard() {
   return (
     <>
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:p-10 lg:px-8 py-4 sm:py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:p-10 lg:px-8 py-4 sm:py-8 container">
         <div className="grid grid-cols-1 px-6 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Stats Cards */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20">

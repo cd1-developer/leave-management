@@ -118,3 +118,11 @@
     @apply bg-background text-foreground;
   }
 }
+@font-face {
+  font-family: gilroy;
+  src: url(../public/font/Gilroy-Bold.woff);
+}
+
+body {
+  font-family: gilroy;
+}

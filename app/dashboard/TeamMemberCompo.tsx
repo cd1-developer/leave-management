@@ -112,18 +112,14 @@ import DialogCompo from "@/components/DialogCompo";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 
 import { toast } from "sonner";
+import { Avatar } from "@/components/ui/avatar";
+import { AvatarFallback } from "@radix-ui/react-avatar";
+import TeamMemberTabel from "@/components/TeamMemberTabel";
+import TeamMemberCard from "@/components/TeamMemberCard";
 
 function TeamMemberCompo() {
   const dispatch = useDispatch();
@@ -292,35 +288,15 @@ function TeamMemberCompo() {
           Add Member
         </button>
       </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Joined</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {organizationMembers.map((member: OrgMember) => (
-            <TableRow key={member.id}>
-              <TableCell>{formatString(member.user.username)}</TableCell>
-              <TableCell>{member.user.email}</TableCell>
-              <TableCell>
-                <Badge
-                  className={`${
-                    member.user.role === "ADMIN" && "bg-blue-700 text-white"
-                  }`}
-                >
-                  {member.user.role}
-                </Badge>
-              </TableCell>
-              <TableCell>{formatDate(member.createdAt)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {/* For desktop */}
+      <div className="hidden sm:block">
+        <TeamMemberTabel organizationMembers={organizationMembers} />
+      </div>
+      <div className="flex flex-col gap-6 sm:hidden">
+        {organizationMembers.map((memeber: OrgMember) => (
+          <TeamMemberCard key={memeber.id} member={memeber} />
+        ))}
+      </div>
 
       <DialogCompo
         title="Add Team Member"
