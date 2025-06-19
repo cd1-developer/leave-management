@@ -15,6 +15,7 @@ import { RootState } from "@/utils/Store";
 import { setOrgMembers, setReportManagers } from "@/utils/DataSlice";
 import DashboardLoader from "@/components/DashboardLoader";
 import Teams from "./Teams";
+
 const TABS = [
   { tab: "Team Memebers", element: <TeamMemberCompo /> },
   { tab: "Leave Types", element: <LeaveTypeCompo /> },
@@ -25,6 +26,7 @@ const TABS = [
   },
   { tab: "Settings", element: <SettingCompo /> },
 ];
+
 function AdminDashboard() {
   const dispatch = useDispatch();
   const [isPending, startTransition] = useTransition();
