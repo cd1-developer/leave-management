@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import formatDate from "@/Helper/formatDate";
 import firstLetter from "@/Helper/FirstLetter";
+import formatString from "@/Helper/formatString";
 interface TeamMemberTabelProps {
   organizationMembers: OrgMember[];
 }
@@ -42,7 +43,7 @@ function TeamMemberTabel({ organizationMembers }: TeamMemberTabelProps) {
                     </AvatarFallback>
                   </Avatar>
                   <span className="font-medium text-slate-800">
-                    {member.user.username}
+                    {formatString(member.user.username)}
                   </span>
                 </div>
               </td>

@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 import formatDate from "@/Helper/formatDate";
 import firstLetter from "@/Helper/FirstLetter";
 import React from "react";
+import formatString from "@/Helper/formatString";
 interface TeamMemberCardProps {
   member: OrgMember;
 }
@@ -18,7 +19,7 @@ function TeamMemberCard({ member }: TeamMemberCardProps) {
         </Avatar>
         <div>
           <p className="font-medium text-slate-800 text-sm">
-            {member.user.username}
+            {formatString(member.user.username)}
           </p>
           <p className="text-xs text-slate-600">{member.user.email}</p>
         </div>

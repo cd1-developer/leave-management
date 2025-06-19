@@ -12,12 +12,17 @@ import SettingCompo from "./SettingCompo";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/utils/Store";
-import { setOrgMembers } from "@/utils/DataSlice";
+import { setOrgMembers, setReportManagers } from "@/utils/DataSlice";
 import DashboardLoader from "@/components/DashboardLoader";
+import Teams from "./Teams";
 const TABS = [
   { tab: "Team Memebers", element: <TeamMemberCompo /> },
   { tab: "Leave Types", element: <LeaveTypeCompo /> },
   { tab: "Leave Requests", element: <LeaveRequestCompo /> },
+  {
+    tab: "Teams",
+    element: <Teams />,
+  },
   { tab: "Settings", element: <SettingCompo /> },
 ];
 function AdminDashboard() {
@@ -31,11 +36,23 @@ function AdminDashboard() {
 
   useEffect(() => {
     startTransition(async () => {
-      const res = await axios.get(
-        `/api/getOrgMembers?organizationId=${organization?.id}`
-      );
-      const { orgMemebers } = res.data;
-      dispatch(setOrgMembers(orgMemebers));
+      try {
+        // 1. Fetch organization members
+        const membersRes = await axios.get(
+          `/api/getOrgMembers?organizationId=${organization?.id}`
+        );
+        const { orgMemebers } = membersRes.data;
+        dispatch(setOrgMembers(orgMemebers));
+
+        // 2. Fetch report managers
+        const managerRes = await axios.get(
+          `/api/report-manager/get-report-manager?organizationId=${organization?.id}`
+        );
+        const { reportManagers } = managerRes.data;
+        dispatch(setReportManagers(reportManagers)); // You should have this action in your Redux slice
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     });
   }, [isFetch]);
 
@@ -104,7 +121,7 @@ function AdminDashboard() {
 
         {/* Tabs for Dashboard Sections */}
         <Tabs defaultValue="Team Memebers" className="mb-6 sm:mb-8">
-          <ScrollArea className=" rounded-md  p-4  w-98 md:w-full">
+          <ScrollArea className=" rounded-md  p-4  w-82  mx-auto md:w-full">
             <TabsList className=" backdrop-blur-sm border border-white/20 w-auto inline-flex gap-2">
               {TABS.map((tabInfo, index) => (
                 <TabsTrigger

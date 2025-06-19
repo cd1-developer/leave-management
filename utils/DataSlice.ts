@@ -8,8 +8,9 @@ export interface User {
   password: string;
   role?: Role;
   createdAt: Date;
-  organizations: Organization[]; // One-to-many
-  orgMember?: OrgMember; // One-to-one (optional)
+  organizations: Organization[];
+  orgMember?: OrgMember;
+  reportManager?: ReportManager;
 }
 
 export interface Organization {
@@ -19,7 +20,7 @@ export interface Organization {
   organizationName: string;
   industryType: string;
   organizationDiscription: string;
-  orgMembers: OrgMember[]; // One-to-many
+  orgMembers: OrgMember[];
   createdAt: Date;
 }
 
@@ -29,23 +30,11 @@ export interface OrgMember {
   userId: string;
   organization: Organization;
   user: User;
-  managedBy: OrgMemberReportManager[]; // Join table references
+  reportManagerId?: string;
+  reportManager?: ReportManager;
   createdAt: Date;
 }
 
-export interface ReportManager {
-  id: string;
-  manages: OrgMemberReportManager[]; // Join table references
-}
-
-export interface OrgMemberReportManager {
-  id: string;
-  orgMemberId: string;
-  reportManagerId: string;
-  assignedAt: Date;
-  orgMember: OrgMember;
-  reportManager: ReportManager;
-}
 export interface leaveTypes {
   id: string;
   type: string;
@@ -55,12 +44,23 @@ export interface leaveTypes {
   colorCode: string;
   leaveDiscription: string;
 }
+
+export interface ReportManager {
+  id: string;
+  organizationId: string;
+  orgMemberId: string;
+  userId: string;
+  user: User;
+  members: OrgMember[];
+}
+
 const initialState = {
   userInfo: {} as User,
   organization: {} as Organization,
   orgMembers: [] as OrgMember[],
   isFetch: false as boolean,
   leaveTypes: [] as leaveTypes[],
+  reportManagers: [] as ReportManager[],
 };
 
 const dataSlice = createSlice({
@@ -79,6 +79,9 @@ const dataSlice = createSlice({
     setLeaveTypes: (state, action: PayloadAction<leaveTypes[]>) => {
       state.leaveTypes = action.payload;
     },
+    setReportManagers: (state, action: PayloadAction<ReportManager[]>) => {
+      state.reportManagers = action.payload;
+    },
     setIsFetch: (state) => {
       state.isFetch = !state.isFetch;
     },
@@ -90,5 +93,6 @@ export const {
   setOrgMembers,
   setIsFetch,
   setLeaveTypes,
+  setReportManagers,
 } = dataSlice.actions;
 export default dataSlice.reducer;

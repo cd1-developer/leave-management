@@ -15,8 +15,8 @@ model User{
   role Role?
   createdAt  DateTime   @default(now()) 
   organizations Organization[] @relation("User")
-  orgMember      OrgMember?     @relation("OrgMember") 
-  
+   orgMember      OrgMember?     @relation("OrgMember") 
+  reportManager ReportManager? @relation("reportManager")
 }
 
 model Organization {
@@ -31,33 +31,23 @@ model Organization {
 }
 
 model OrgMember {
-   id  String @id @default(auto()) @map("_id") @db.ObjectId
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
   organizationId String @db.ObjectId
   userId         String @db.ObjectId @unique
-  designation String? @default("")
-  
   organization   Organization               @relation("OrganizationMembers", fields: [organizationId], references: [id])
   user           User         @relation("OrgMember", fields: [userId], references: [id])
-  managedBy      OrgMemberReportManager[]   // Reference to join table
+  reportManagerId String?      @db.ObjectId
+  reportManager   ReportManager? @relation("ReportManagerToMembers",fields: [reportManagerId], references: [id])
   createdAt  DateTime   @default(now()) 
 }
 
-model ReportManager {
-   id  String @id @default(auto()) @map("_id") @db.ObjectId
-  manages        OrgMemberReportManager[]   // Reference to join table
-}
-
-// Explicit join table (for extra metadata)
-model OrgMemberReportManager {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  orgMemberId     String         @db.ObjectId
-  reportManagerId String         @db.ObjectId
-  assignedAt      DateTime       @default(now())
-
-  orgMember       OrgMember      @relation(fields: [orgMemberId], references: [id])
-  reportManager   ReportManager  @relation(fields: [reportManagerId], references: [id])
-
-  @@unique([orgMemberId, reportManagerId]) // Enforce uniqueness without being primary key
+model ReportManager{
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId String
+  orgMemberId String
+  userId String @db.ObjectId @unique
+  user User @relation("reportManager",fields: [userId],references: [id])
+  members         OrgMember[]  @relation("ReportManagerToMembers")
 }
 
 model leaveTypes{

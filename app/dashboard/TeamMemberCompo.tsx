@@ -106,20 +106,21 @@ import { useState, useEffect, useMemo, useTransition } from "react";
 import { RootState } from "@/utils/Store";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Check, Cross, Flag, Mail, Plus, Search, X } from "lucide-react";
+import { Check, Mail, Plus, Search, X } from "lucide-react";
 import { OrgMember, setIsFetch, setOrgMembers, User } from "@/utils/DataSlice";
 import DialogCompo from "@/components/DialogCompo";
-import { Badge } from "@/components/ui/badge";
+
 import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 
 import { toast } from "sonner";
-import { Avatar } from "@/components/ui/avatar";
-import { AvatarFallback } from "@radix-ui/react-avatar";
+
 import TeamMemberTabel from "@/components/TeamMemberTabel";
 import TeamMemberCard from "@/components/TeamMemberCard";
+
+import firstLetter from "@/Helper/FirstLetter";
 
 function TeamMemberCompo() {
   const dispatch = useDispatch();
@@ -177,48 +178,45 @@ function TeamMemberCompo() {
         dispatch(setOrgMembers([...organizationMembers, newMember]));
         dispatch(setIsFetch());
         try {
-          let response = await axios.post("/api/addOrgMember", {
-            userId: user.id,
-            organizationId,
+          const responses = await Promise.all(
+            selectedUser.map((user: User) =>
+              axios.post("/api/addOrgMember", {
+                userId: user.id,
+                organizationId,
+              })
+            )
+          );
+          let hasError = false;
+          responses.forEach((res) => {
+            const { success, message } = res.data;
+            if (!success) {
+              hasError = true;
+              toast.error(message || "Failed to add member", {
+                position: "bottom-right",
+                duration: 3000,
+                className: "bg-red-700 text-white border border-red-600",
+              });
+            }
           });
-          const { success, message, newMember } = response.data;
-          if (success === false) {
-            toast.error(message, {
+
+          if (!hasError) {
+            toast.success("All members added successfully", {
               position: "bottom-right",
               duration: 3000,
-              className: "bg-red-700 text-white border border-red-600",
-              style: {
-                backgroundColor: "#C1292E",
-                color: "white",
-                border: "1px solid #3e5692",
-              },
+              className: "bg-green-700 text-white border border-green-600",
             });
           }
           setIsOpen(false);
           setInput("");
-          toast.success(message, {
-            position: "bottom-right",
-            duration: 3000,
-            className: "bg-green-700 text-white border border-green-600",
-            style: {
-              backgroundColor: "#285943",
-              color: "white",
-              border: "1px solid #3e5692",
-            },
-          });
         } catch (error: any) {
-          console.log(
-            "Error in adding member in Organization, " + error.message
+          console.error(
+            "Error in adding member in Organization:",
+            error.message
           );
-          toast.error("Error in adding member in Organization", {
+          toast.error("An error occurred while adding members", {
             position: "bottom-right",
             duration: 3000,
             className: "bg-red-700 text-white border border-red-600",
-            style: {
-              backgroundColor: "#C1292E",
-              color: "white",
-              border: "1px solid #3e5692",
-            },
           });
         }
       });
@@ -226,25 +224,6 @@ function TeamMemberCompo() {
   }
 
   // Converting the username's first letter into uppercase;
-
-  function formatString(username: string) {
-    let newUsername = username.trim().split(" ");
-    newUsername = newUsername.map(
-      (username: string) =>
-        `${username[0].toUpperCase()}${username.slice(1, username.length)}`
-    );
-    let concatenatedUsername = newUsername.join(" ");
-    return concatenatedUsername;
-  }
-
-  function formatDate(dateString: Date) {
-    const dateInfo = new Date(dateString);
-    const month = dateInfo.getMonth() + 1;
-    const year = dateInfo.getFullYear();
-
-    const date = dateInfo.getDate();
-    return `${year}-${month}-${date}`;
-  }
 
   function firstLetter(username: string) {
     let userName = username

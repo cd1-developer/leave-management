@@ -78,6 +78,7 @@ function CreateOrganizationCompo(): JSX.Element {
         }
 
         dispatch(setOrganization(organization));
+
         toast.success(message, {
           position: "bottom-right",
           duration: 3000,
