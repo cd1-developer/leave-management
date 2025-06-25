@@ -115,7 +115,7 @@ export default function LoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-slate-700 font-medium flex items-center gap-2">
+                  <FormLabel className="text-slate-700 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-blue-600" />
                     Email Address
                   </FormLabel>
@@ -140,7 +140,7 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-slate-700 font-medium flex items-center gap-2">
+                  <FormLabel className="text-slate-700  flex items-center gap-2">
                     <Lock className="w-4 h-4 text-blue-600" />
                     Password
                   </FormLabel>

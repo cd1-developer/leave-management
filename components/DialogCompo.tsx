@@ -9,9 +9,10 @@ import {
 interface DialogCompoType {
   isOpen: boolean;
   onOpenChange?: (isOpen: boolean) => void;
-  title: string;
+  title?: string;
   discription?: string;
   children?: React.ReactNode;
+  icon?: React.ReactNode;
 }
 function DialogCompo({
   isOpen,
@@ -19,12 +20,16 @@ function DialogCompo({
   onOpenChange,
   discription,
   children,
+  icon,
 }: DialogCompoType) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-w-[95vw] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="flex gap-3">
+            {icon}
+            {title}
+          </DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
         </DialogHeader>
         {children}
