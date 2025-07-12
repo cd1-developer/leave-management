@@ -25,7 +25,12 @@ export const GET = async (req: NextRequest) => {
       (await prisma.reportManager.findMany({
         where: { organizationId },
         include: {
-          members: true,
+          members: {
+            include: {
+              user: true,
+            },
+          },
+          user: true,
         },
       })) ?? [];
 

@@ -44,6 +44,18 @@ export interface leaveTypes {
   colorCode: string;
   leaveDiscription: string;
 }
+export interface leaves {
+  id: string;
+  LeaveTypes: string;
+  Day: Day;
+  StartDateTime: Date;
+  EndDateTime: Date;
+  UserId: string;
+  OrganizationId: string;
+  reportManagerId: string;
+  approvedStatus: ApprovedStatus;
+  applyDate: Date;
+}
 
 export interface ReportManager {
   id: string;
@@ -61,7 +73,18 @@ const initialState = {
   isFetch: false as boolean,
   leaveTypes: [] as leaveTypes[],
   reportManagers: [] as ReportManager[],
+  leaves: [] as leaves[],
 };
+
+enum Day {
+  fullDay,
+  HalfDay,
+}
+enum ApprovedStatus {
+  Approved,
+  Reject,
+  Pending,
+}
 
 const dataSlice = createSlice({
   name: "dataSlice",
@@ -82,8 +105,19 @@ const dataSlice = createSlice({
     setReportManagers: (state, action: PayloadAction<ReportManager[]>) => {
       state.reportManagers = action.payload;
     },
+    setLeaves: (state, action: PayloadAction<leaves[]>) => {
+      state.leaves = action.payload;
+    },
+    removeReportManager: (state, action: PayloadAction<string>) => {
+      state.reportManagers = state.reportManagers.filter(
+        (manager: ReportManager) => manager.id !== action.payload
+      );
+    },
     setIsFetch: (state) => {
       state.isFetch = !state.isFetch;
+    },
+    removeState: () => {
+      return initialState;
     },
   },
 });
@@ -94,5 +128,8 @@ export const {
   setIsFetch,
   setLeaveTypes,
   setReportManagers,
+  setLeaves,
+  removeReportManager,
+  removeState,
 } = dataSlice.actions;
 export default dataSlice.reducer;

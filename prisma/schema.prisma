@@ -8,26 +8,29 @@ datasource db {
 }
 
 model User{
-   id  String @id @default(auto()) @map("_id") @db.ObjectId
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
   username String
   email String @unique
   password String
   role Role?
-  createdAt  DateTime   @default(now()) 
+  createdAt  DateTime  @default(now())
   organizations Organization[] @relation("User")
-   orgMember      OrgMember?     @relation("OrgMember") 
+   orgMember      OrgMember?     @relation("OrgMember")
   reportManager ReportManager? @relation("reportManager")
+  leaves    leaves[] @relation("userLeaves")
+
 }
 
 model Organization {
    id  String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
   user User @relation("User", fields: [userId],references: [id])
-  organizationName String
-  industryType String
-  organizationDiscription String
+  organizationName String                             
+  industryType String    
+  organizationDiscription String                                    
   orgMembers OrgMember[] @relation("OrganizationMembers")
-  createdAt  DateTime   @default(now()) 
+  leaves      leaves[] @relation("organizationLeave")
+  createdAt  DateTime   @default(now())
 }
 
 model OrgMember {
@@ -38,7 +41,7 @@ model OrgMember {
   user           User         @relation("OrgMember", fields: [userId], references: [id])
   reportManagerId String?      @db.ObjectId
   reportManager   ReportManager? @relation("ReportManagerToMembers",fields: [reportManagerId], references: [id])
-  createdAt  DateTime   @default(now()) 
+  createdAt  DateTime   @default(now())
 }
 
 model ReportManager{
@@ -48,6 +51,7 @@ model ReportManager{
   userId String @db.ObjectId @unique
   user User @relation("reportManager",fields: [userId],references: [id])
   members         OrgMember[]  @relation("ReportManagerToMembers")
+  leaves    leaves[] @relation("reportManagerId")
 }
 
 model leaveTypes{
@@ -59,10 +63,36 @@ model leaveTypes{
     colorCode String
     leaveDiscription String
 }
+model leaves {
+  id                  String @id @default(auto()) @map("_id") @db.ObjectId
+  LeaveTypes          String
+  Day                 Day?
+  StartDateTime       DateTime
+  EndDateTime         DateTime
+  UserId              String  @db.ObjectId
+  User                User          @relation("userLeaves", fields: [UserId], references: [id])
+  OrganizationId      String  @db.ObjectId
+  Organization        Organization  @relation("organizationLeave", fields: [OrganizationId], references: [id])    
+  reportManagerId     String  @db.ObjectId
+  approvedStatus      ApprovedStatus @default(Pending)
+  reportManager       ReportManager @relation("reportManagerId", fields: [reportManagerId], references: [id])   
+  applyDate           DateTime  @default(now())
+}
+
+
 
 enum Role {
   USER
   ADMIN
   REPORTED_MANAGER
   MEMBER
+}
+enum Day {
+  fullDay 
+  HalfDay
+}
+enum ApprovedStatus {
+  Approved
+  Reject
+  Pending
 }

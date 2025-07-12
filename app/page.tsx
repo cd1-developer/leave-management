@@ -1,8 +1,17 @@
+"use client";
 import Link from "next/link";
 import { Calendar, ArrowRight, Shield, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { removeState } from "@/utils/DataSlice";
 
 export default function HomePage() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(removeState());
+  }, []);
   return (
     <div className="min-h-screen bg-indigo-100 relative overflow-hidden">
       {/* Doogal-style background elements */}

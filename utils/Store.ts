@@ -14,6 +14,7 @@ const persistConfig = {
     "orgMembers",
     "leaveTypes",
     "reportManager",
+    "leaves",
   ],
 };
 

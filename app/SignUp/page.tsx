@@ -81,7 +81,7 @@ export default function SignupPage() {
           });
         }
       } catch (error: any) {
-        toast.success("Sign Up Failed", {
+        toast.error("Sign Up Failed", {
           description: error.message,
           position: "bottom-right",
           duration: 3000,

@@ -25,7 +25,11 @@ export async function GET(request: NextRequest) {
               role: true,
             },
           },
-          reportManager: true,
+          reportManager: {
+            include: {
+              user: true,
+            },
+          },
         },
       })) ?? [];
 

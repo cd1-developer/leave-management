@@ -33,7 +33,7 @@ function Navbar() {
                 <div className="flex gap-3 items-center ">
                   <Avatar>
                     <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white font-semibold text-lg">
-                      {userInfo?.username[0]}
+                      {userInfo?.username[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <Button onClick={signOutHandler} variant="outline">

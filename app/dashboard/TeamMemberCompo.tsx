@@ -120,8 +120,6 @@ import { toast } from "sonner";
 import TeamMemberTabel from "@/components/TeamMemberTabel";
 import TeamMemberCard from "@/components/TeamMemberCard";
 
-import firstLetter from "@/Helper/FirstLetter";
-
 function TeamMemberCompo() {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
@@ -163,11 +161,11 @@ function TeamMemberCompo() {
   }, []);
 
   function addMember() {
-    startTransition(() => {
-      selectedUser.map(async (user: User) => {
+    startTransition(async () => {
+      const newMembers = selectedUser.map((user: User) => {
         // Adding member data in redux store and then send it to the database for fast response
         let newMember = {
-          id: new Date().toLocaleString(),
+          id: crypto.randomUUID(),
           organizationId,
           userId: user.id,
           user: { ...user, role: "MEMBER" },
@@ -175,51 +173,48 @@ function TeamMemberCompo() {
           managedBy: [],
           createdAt: new Date(),
         } as OrgMember;
-        dispatch(setOrgMembers([...organizationMembers, newMember]));
-        dispatch(setIsFetch());
-        try {
-          const responses = await Promise.all(
-            selectedUser.map((user: User) =>
-              axios.post("/api/addOrgMember", {
-                userId: user.id,
-                organizationId,
-              })
-            )
-          );
-          let hasError = false;
-          responses.forEach((res) => {
-            const { success, message } = res.data;
-            if (!success) {
-              hasError = true;
-              toast.error(message || "Failed to add member", {
-                position: "bottom-right",
-                duration: 3000,
-                className: "bg-red-700 text-white border border-red-600",
-              });
-            }
-          });
-
-          if (!hasError) {
-            toast.success("All members added successfully", {
+        return newMember;
+      });
+      try {
+        const responses = await Promise.all(
+          selectedUser.map((user: User) =>
+            axios.post("/api/addOrgMember", {
+              userId: user.id,
+              organizationId,
+            })
+          )
+        );
+        let hasError = false;
+        responses.forEach((res) => {
+          const { success, message } = res.data;
+          if (!success) {
+            hasError = true;
+            toast.error(message || "Failed to add member", {
               position: "bottom-right",
               duration: 3000,
-              className: "bg-green-700 text-white border border-green-600",
+              className: "bg-red-700 text-white border border-red-600",
             });
           }
-          setIsOpen(false);
-          setInput("");
-        } catch (error: any) {
-          console.error(
-            "Error in adding member in Organization:",
-            error.message
-          );
-          toast.error("An error occurred while adding members", {
+        });
+
+        if (!hasError) {
+          toast.success("All members added successfully", {
             position: "bottom-right",
             duration: 3000,
-            className: "bg-red-700 text-white border border-red-600",
+            className: "bg-green-700 text-white border border-green-600",
           });
         }
-      });
+        dispatch(setOrgMembers([...organizationMembers, ...newMembers]));
+        setIsOpen(false);
+        setInput("");
+      } catch (error: any) {
+        console.error("Error in adding member in Organization:", error.message);
+        toast.error("An error occurred while adding members", {
+          position: "bottom-right",
+          duration: 3000,
+          className: "bg-red-700 text-white border border-red-600",
+        });
+      }
     });
   }
 

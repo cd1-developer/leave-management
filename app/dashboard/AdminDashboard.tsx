@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { Clock, Calendar, Users, Building2 } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,52 +21,20 @@ const TABS = [
   { tab: "Leave Types", element: <LeaveTypeCompo /> },
   { tab: "Leave Requests", element: <LeaveRequestCompo /> },
   {
-    tab: "Teams",
+    tab: "Team Structure",
     element: <Teams />,
   },
   { tab: "Settings", element: <SettingCompo /> },
 ];
 
 function AdminDashboard() {
-  const dispatch = useDispatch();
-  const [isPending, startTransition] = useTransition();
-  const organization = useSelector(
-    (state: RootState) => state.dataSlice.organization
-  );
-
-  const isFetch = useSelector((state: RootState) => state.dataSlice.isFetch);
-
-  useEffect(() => {
-    startTransition(async () => {
-      try {
-        // 1. Fetch organization members
-        const membersRes = await axios.get(
-          `/api/getOrgMembers?organizationId=${organization?.id}`
-        );
-        const { orgMemebers } = membersRes.data;
-        dispatch(setOrgMembers(orgMemebers));
-
-        // 2. Fetch report managers
-        const managerRes = await axios.get(
-          `/api/report-manager/get-report-manager?organizationId=${organization?.id}`
-        );
-        const { reportManagers } = managerRes.data;
-        dispatch(setReportManagers(reportManagers)); // You should have this action in your Redux slice
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    });
-  }, [isFetch]);
-
-  if (isPending) {
-    return <DashboardLoader />;
-  }
+  const [activeTab, setActiveTab] = useState(TABS[0].tab);
 
   return (
     <>
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:p-10 lg:px-8 py-4 sm:py-8 container">
-        <div className="grid grid-cols-1 px-6 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <main className="w-full sm:w-[40rem] md:w-7xl mx-auto px-0 sm:p-10 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 px-3 sm:grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Stats Cards */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20">
             <div className="flex items-center">
@@ -122,9 +90,13 @@ function AdminDashboard() {
         </div>
 
         {/* Tabs for Dashboard Sections */}
-        <Tabs defaultValue="Team Memebers" className="mb-6 sm:mb-8">
-          <ScrollArea className=" rounded-md  p-4  w-82  mx-auto md:w-full">
-            <TabsList className=" backdrop-blur-sm border border-white/20 w-auto inline-flex gap-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value)}
+          className="mb-6 sm:mb-8"
+        >
+          <ScrollArea className="rounded-sm px-4 w-full mx-auto">
+            <TabsList className="backdrop-blur-sm border border-white/20 w-auto inline-flex gap-2">
               {TABS.map((tabInfo, index) => (
                 <TabsTrigger
                   value={tabInfo.tab}

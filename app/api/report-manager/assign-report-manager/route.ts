@@ -37,7 +37,7 @@ export const POST = async (req: NextRequest) => {
     });
 
     // Create a new ReportManager entry linking the user and their org member record
-    await prisma.reportManager.create({
+    let newReportManager = await prisma.reportManager.create({
       data: {
         userId,
         organizationId,
@@ -49,6 +49,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({
       success: true,
       message: "Report Manager assigned successfully.",
+      newReportManager,
     });
   } catch (error: any) {
     // Log the error for server-side debugging

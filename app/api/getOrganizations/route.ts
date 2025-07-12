@@ -19,17 +19,40 @@ export async function GET(request: NextRequest) {
     }
 
     // Query the database to find organizations matching the given organization id
-    const organizations = await prisma.organization.findMany({
+    let organizations = await prisma.organization.findFirst({
       where: { userId: id },
       include: {
         orgMembers: true,
       },
     });
 
+    if (!organizations) {
+      const orgMember = await prisma.orgMember.findFirst({
+        where: {
+          userId: id,
+        },
+        include: {
+          organization: true,
+        },
+      });
+      if (orgMember) {
+        let organizationId = orgMember.organizationId;
+
+        organizations = await prisma.organization.findFirst({
+          where: {
+            id: organizationId,
+          },
+          include: {
+            orgMembers: true,
+          },
+        });
+      }
+    }
+
     // Return the fetched organization(s) in the response
     return NextResponse.json({
       success: true,
-      organizations: organizations[0] ?? [],
+      organizations: organizations ?? {},
     });
   } catch (error: any) {
     // Log the error for debugging

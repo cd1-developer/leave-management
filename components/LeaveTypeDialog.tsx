@@ -215,7 +215,11 @@ function LeaveTypeDialog({
                     </FormLabel>
                     <FormControl>
                       <div className="flex items-center space-x-2">
-                        <Input
+                        <div
+                          className="w-8 h-8 rounded-full border border-slate-200"
+                          style={{ background: field.value }}
+                        ></div>
+                        <input
                           id="leaveColor"
                           type="color"
                           className="w-16 h-8 p-0"
